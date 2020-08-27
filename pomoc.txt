@@ -1,0 +1,93 @@
+///////////////////////////////////////
+ public double tacnostJedan ( NeuralNetwork neuralNetwork, DataSet testData) {
+        int tacnoPredvidjenih = 0; 
+        int ukupno = 0; 
+        
+        for( DataSetRow row : testData){
+            neuralNetwork.setInput(row.getInput());
+            neuralNetwork.calculate();
+            
+            double[] predvidjene = neuralNetwork.getOutput(); 
+            double zaPred = predvidjene[0]; 
+            int pred = 0; 
+            if(zaPred >0.5) pred=1; 
+            int zeljene = (int) row.getDesiredOutput()[0]; 
+            if(zeljene == pred) tacnoPredvidjenih ++; 
+            ukupno ++;
+        }
+        
+        double tacnost  = (double) tacnoPredvidjenih / ukupno; 
+        System.out.println("Tacnost je: " + tacnost);
+        return tacnost;
+       
+    }
+/////////////////////////////////////////////////////////    
+    public double tacnostVise (NeuralNetwork neuralNetwork, DataSet testData){
+        double tacnost = 0; 
+        String[] classLabels = {"s1","s2","s3"};
+        ConfusionMatrix cm = new ConfusionMatrix(classLabels);
+        for(DataSetRow row : testData) {
+            neuralNetwork.setInput(row.getInput());
+            neuralNetwork.calculate();
+            
+            int predvidjene = (int) MaxValue(neuralNetwork.getOutput()); 
+            int trenutne = (int) MaxValue (row.getDesiredOutput()); 
+            cm.incrementElement(trenutne, predvidjene);
+            
+        }
+        
+        for (int i =0; i< output ; i++){
+            int tp = cm.getTruePositive(i);
+            int tn = cm.getTrueNegative(i);
+            int fp = cm.getFalsePositive(i); 
+            int fn = cm.getFalseNegative(i);
+            
+            tacnost += (tp + tn) / (tp +tn + fp + fn);
+        }
+        double prosecnaTacnost = tacnost/ output;
+        System.out.println("Prosecna tacnost: " + prosecnaTacnost);
+        return prosecnaTacnost;
+    }
+///////////////////////////////////////////////////////////////////////////    
+    public double msneOne( NeuralNetwork neuralNetwork, DataSet testData){
+        double error = 0; 
+        for(DataSetRow row : testData){
+            neuralNetwork.setInput(row.getInput());
+            neuralNetwork.calculate();
+            
+            int predvidjene = (int) neuralNetwork.getOutput()[0]; 
+            int zeljene = (int) row.getDesiredOutput()[0]; 
+            
+            error +=  Math.pow(predvidjene-zeljene,2); 
+        }
+        double msne = (double) error / (2*testData.size());
+        return msne;
+                
+    }
+//////////////////////////////////////////////////////////    
+    public double msneMore( NeuralNetwork neuralNetwork, DataSet testData){
+        double error = 0; 
+        for(DataSetRow row : testData){
+            neuralNetwork.setInput(row.getInput());
+            neuralNetwork.calculate();
+            
+            double[] predvidjene = neuralNetwork.getOutput();
+            double[] zeljene =  row.getDesiredOutput();
+            for(int i =0; i< zeljene.length; i++){
+                error +=  Math.pow(predvidjene[i]-zeljene[i],2);
+            }
+        }
+        double msne = (double) error / (2*testData.size());
+        return msne;
+                
+    }
+/////////////////////////////////////////////////////////////////////
+    private double MaxValue (double[] niz) {
+        double max = Double.MIN_VALUE;
+        for( double vr  : niz) {
+            if(vr > max) {
+                max = vr;
+            }
+        }
+        return max;
+    }
